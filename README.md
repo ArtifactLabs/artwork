@@ -1,40 +1,33 @@
 # Git Recycle Bin - Artwork Repository
 
-This repository demonstrates the concept and benefits of **git-recycle-bin**, a approach for managing binary 
-assets in Git repositories while maintaining the benefits of version control without the drawbacks of bloating 
+This repository demonstrates the concept and benefits of **git-recycle-bin**, a approach for managing binary
+assets in Git repositories while maintaining the benefits of version control without the drawbacks of bloating
 the main source repository.
 
-**This repository exists specifically to isolate binaries away from the main source repository, while still 
+**This repository exists specifically to isolate binaries away from the main source repository, while still
 allowing the source repo to import them as a submodule.**
 
 ## Repository Layout Structure
 
 ```
 .
+├── aux/
+│   └── branch_subset.sh         # Create single-file branches for efficient submodules
 ├── grb-flow/                    # Process flow diagrams
-│   ├── binaries-in-source.drawio.svg           (873KB) - How to manage binaries in source
-│   ├── binaries-from-source-simple.drawio.svg (129KB) - Simplified git-recycle-bin flow
-│   └── binaries-from-source.drawio.svg        (642KB) - Detailed git-recycle-bin flow
-├── grb/                         # Git Recycle Bin assets
-│   ├── vector/                  # Production-ready vector assets
-│   │   ├── flat1-color-green.svg     (36KB) - Green themed logo
-│   │   ├── flat1-color-dark.svg      (36KB) - Dark themed logo  
-│   │   ├── flat1-bw-outline-b.svg    (37KB) - Black outline logo
-│   │   ├── flat1-bw-outline-w.svg    (37KB) - White outline logo
-│   │   └── flat1-bw.svg              (36KB) - Black & white logo
-│   ├── draft-rasters/           # AI-generated draft images (26 files, ~1-3MB each)
+├── grb/                         # Git-Recycle-Bin artwork assets
+│   ├── vector/                  # Production-ready SVG vector assets
+│   ├── draft-rasters/           # AI-generated draft binary images (>25 files, ~1-3MB each)
 │   │   ├── 3d - *.png           # 3D style variations
 │   │   ├── flat - *.png         # Flat style variations
 │   │   └── original.png         # Original reference image
 │   └── environmental/           # Environmental/scene context images
-│       └── scene - *.png        # Save the planet by build avoidance
-└── artifactlabs/               # Umbrella organization
+└── artifactlabs/                # Umbrella organization
 ```
 
 ## What are .drawio.svg Files?
 
-The `.drawio.svg` files are **Draw.io diagrams saved in SVG format**. Draw.io (now diagrams.net) is a popular 
-diagramming tool that can export diagrams as SVG files with embedded metadata that allows them to be reopened 
+The `.drawio.svg` files are **Draw.io diagrams saved in SVG format**. Draw.io (now diagrams.net) is a popular
+diagramming tool that can export diagrams as SVG files with embedded metadata that allows them to be reopened
 and edited in Draw.io.
 
 ### Key characteristics:
@@ -44,7 +37,7 @@ and edited in Draw.io.
 - **Metadata-rich**: Contains both visual content and editing information
 - **Self-contained**: Single file contains the complete diagram
 
-These files serve as both documentation and editable source files for the process flow diagrams explaining 
+These files serve as both documentation and editable source files for the process flow diagrams explaining
 git-recycle-bin concepts.
 
 ## Binary Assets in Git: When and Why
@@ -71,8 +64,32 @@ Examples: AI-generated iterations, build artifacts, large media files, temporary
 
 ## The Git-Recycle-Bin Solution
 
-**Git-recycle-bin** addresses the binary management challenge by using **separate Git repositories** for 
+**Git-recycle-bin** addresses the binary management challenge by using **separate Git repositories** for
 different asset categories. This approach provides:
+
+### Single-File Branch Creation
+
+This repository includes `aux/branch_subset.sh`, a script that creates ultra-lightweight branches containing
+only a single file. This enables even more efficient asset distribution:
+
+```bash
+# Create a branch with only one SVG file
+aux/branch_subset.sh grb/vector/flat1-color-dark.svg
+# Creates branch: subset/20241225-143045/flat1-color-dark
+
+# Push the single-file branch
+git push origin subset/20241225-143045/flat1-color-dark
+
+# In other repo, import as minimal submodule
+git submodule add -b subset/20241225-143045/flat1-color-dark --depth 1 \
+  https://github.com/org/artwork.git assets/logo
+```
+
+**Benefits of single-file branches:**
+- **Minimal bandwidth**: Only the specific file is transferred
+- **Ultra-fast clones**: `--depth 1` fetches minimal history - but see note in script
+- **Timestamped isolation**: Each branch is tied to a specific commit date
+- **Storage efficient**: No duplicate storage on server (same blobs)
 
 ### Benefits of Git-Based Binary Storage
 
@@ -89,7 +106,7 @@ different asset categories. This approach provides:
 ```
 Source Repository (lean)     →    Binary Builds Repository (dedicated)
 ├── Source code              →    ├── Production assets
-├── Small essential assets   →    ├── Draft iterations  
+├── Small essential assets   →    ├── Draft iterations
 └── Documentation           →    ├── Generated content
                              →    └── Large media files
 ```
@@ -120,8 +137,8 @@ This allows the source repository to:
 
 ## Binary Policies: Like Branching Policies, But for Assets
 
-Just as repositories have **branching policies** (main branch protection, feature branch workflows, etc.), 
-teams should establish **binary policies** that define how different types of assets are managed across 
+Just as repositories have **branching policies** (main branch protection, feature branch workflows, etc.),
+teams should establish **binary policies** that define how different types of assets are managed across
 repositories.
 
 ### Binary Policy Framework
@@ -131,7 +148,7 @@ Different binary repositories should have different policies based on their cont
 #### 🔒 **Infinite Retention + Low Churn** (This Repository)
 - **Policy**: Permanent storage, minimal changes
 - **Integration**: ✅ **Safe for submodule import**
-- **Characteristics**: 
+- **Characteristics**:
   - Assets are preserved indefinitely
   - Changes are infrequent and deliberate
   - History remains stable and reliable
@@ -155,7 +172,7 @@ This artwork repository follows an **infinite retention + low churn** policy:
 ```
 Binary Policy: git-recycle-bin-artwork
 ├── Retention: Infinite (assets preserved forever)
-├── Churn Rate: Low (changes are rare and intentional)  
+├── Churn Rate: Low (changes are rare and intentional)
 ├── Branch Stability: High (no orphan branches, no expiration)
 ├── Submodule Safety: ✅ SAFE
 └── Integration Pattern: Designed for submodule import
@@ -169,7 +186,7 @@ Binary Policy: git-recycle-bin-artwork
 
 ## Conclusion
 
-Git-recycle-bin enables teams to maintain the benefits of Git-based asset management while avoiding the 
-performance penalties of large binary files in source repositories. By strategically separating concerns 
-across multiple Git repositories, teams can achieve optimal performance, maintainability, and developer 
+Git-recycle-bin enables teams to maintain the benefits of Git-based asset management while avoiding the
+performance penalties of large binary files in source repositories. By strategically separating concerns
+across multiple Git repositories, teams can achieve optimal performance, maintainability, and developer
 experience.
