@@ -5,8 +5,8 @@
 # DESCRIPTION:
 #   Creates a new git branch with "subset/DATE/" prefix that contains only the specified
 #   file, removing all other tracked files. The branch name is derived from the
-#   committer date of HEAD commit and basename of the file (without extension). 
-#   This is useful for creating lightweight submodules that contain only specific 
+#   committer date of HEAD commit and basename of the file (without extension).
+#   This is useful for creating lightweight submodules that contain only specific
 #   files from larger repositories.
 #
 #   STORAGE EFFICIENCY:
@@ -126,10 +126,23 @@ else
     echo "Successfully created branch '$BRANCH_NAME' with only '$FILE_PATH'"
 fi
 
-echo ""
-echo "Branch '$BRANCH_NAME' created locally and ready for use."
-echo "To push this branch to origin, run:"
-echo "  git push origin $BRANCH_NAME"
-echo ""
-echo "Then use as submodule with:"
-echo "  git submodule add -b $BRANCH_NAME --depth 1 <repo_url> <local_path>"
+cat << EOF
+
+Branch '$BRANCH_NAME' created locally and ready for use.
+To push this branch to origin, run:
+  git push origin $BRANCH_NAME
+
+Then use as submodule in another repository:
+  git submodule add -b $BRANCH_NAME --depth 1 <repo_url> <local_path>
+
+  (Note: Even with --depth 1 the above may fetch more than just the HEAD commit.
+    For minimal fetch, use two-step approach:
+    # Step 1: Shallow clone directly
+    git clone --depth 1 --single-branch --branch $BRANCH_NAME <repo_url> <local_path>
+    # Step 2: Add the existing directory as a submodule
+    git submodule add --branch $BRANCH_NAME <repo_url> <local_path>
+  
+  Both approaches are minimal fetches for people who will subsequently pull the submodule,
+  but the two-step approach saves bandwidth for the one adding the submodule to begin with)
+
+EOF
